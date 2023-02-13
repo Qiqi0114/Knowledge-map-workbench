@@ -36,7 +36,7 @@
 import { onMounted, ref } from 'vue'
 import { getTaskBookListAPI } from '../../api/bookLabel';
 import router from '../../router';
-//card赋值
+//赋值
 const baseInfoCardData = ref([]);
 // 总数
 const pTotal = ref(0);
