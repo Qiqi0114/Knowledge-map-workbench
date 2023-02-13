@@ -25,9 +25,11 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 //当前激活菜单的 index
-const activeIndex = ref<string>('/home/visualization')
+const activeIndex = ref<string>('/home/taskList')
 </script>
 
 <style lang="scss" scoped>
-
+.router-container{
+  width: 100%;
+}
 </style>
