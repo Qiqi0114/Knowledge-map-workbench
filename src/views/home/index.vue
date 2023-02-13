@@ -8,11 +8,11 @@
   router
   active-text-color="#ffd04b"
 >
-  <el-menu-item   style="margin-left:40px" index="/home/visualization">工作台</el-menu-item>
-  <el-menu-item   style="margin-left:40px" index="/home/taskList">任务列表</el-menu-item>
-  <el-menu-item   style="margin-left:40px" index="/home/calloutTask">标注列表</el-menu-item>
+  <el-menu-item   style="margin-left:40px" index="/home/visualization"><el-icon><Briefcase /></el-icon>工作台</el-menu-item>
+  <el-menu-item   style="margin-left:40px" index="/home/taskList"><el-icon><BellFilled /></el-icon>任务列表</el-menu-item>
+  <el-menu-item   style="margin-left:40px" index="/home/calloutTask"><el-icon><EditPen /></el-icon>标注列表</el-menu-item>
   <el-sub-menu style="margin-left:400px" index="2">
-    <template #title>账号管理</template>
+    <template #title><el-icon><Avatar /></el-icon>账号管理</template>
     <el-menu-item index="2-1">用户信息</el-menu-item>
     <el-menu-item index="/login">退出</el-menu-item>
   </el-sub-menu>
@@ -24,6 +24,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { Briefcase,BellFilled,EditPen,Avatar } from '@element-plus/icons-vue'
 //当前激活菜单的 index
 const activeIndex = ref<string>('/home/taskList')
 </script>
