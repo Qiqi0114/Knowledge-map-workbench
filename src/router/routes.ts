@@ -33,6 +33,14 @@ const routes:Array<RouteRecordRaw> = [
             component: () => import("../views/taskList/index.vue"),
         },
         {
+          path: "/home/bookLabel",
+          name: "bookLabel",
+          meta: {
+              title: "书籍标注",
+          },
+          component: () => import("../views/taskList/bookLabel.vue"),
+        },
+        {
             path: "/home/calloutTask",
             name: "calloutTask",
             meta: {
