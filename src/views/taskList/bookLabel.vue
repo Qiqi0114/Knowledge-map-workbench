@@ -1,11 +1,14 @@
 <template>
     <el-row>
+      <!-- 左侧书籍文章区域 -->
         <el-col :span="12" >
+            <!-- 章节目录按钮 -->
             <div class="grid-content">
                 <el-icon v-if="drawer" :size="30" style="float: left;padding: 15px;" @click="drawer = true"><Expand /></el-icon>
                 <el-icon v-if="!drawer" :size="30" style="float: left;padding: 15px;" @click="drawer = true"><Fold /></el-icon>
                 <div>{{ baseInfoDirectoryName }}</div>
             </div>
+            <!-- 滚动条加载文章 -->
             <el-scrollbar :height="scrollbarHeight" style="margin-top: 30px;">
                 <div
                  v-loading="bookLoading"
@@ -16,8 +19,10 @@
                 ><div id="directoryText"></div></div>
             </el-scrollbar>
         </el-col>
+      <!-- 右侧词条、图谱区域 -->
         <el-col :span="12">
-          <el-row>
+          <!-- 查询 添加词条标注 -->
+            <el-row>
                   <el-col>
                       <el-form ref="searchFormRef" :model="searchForm" :inline="true" style="width:100%">
                           <el-row>
@@ -33,7 +38,8 @@
                           </el-row>
                       </el-form>
                   </el-col>
-              </el-row>
+            </el-row>
+            <!-- 词条列表分页 -->
             <el-row>
               <!-- 表格部分 -->
               <div ref="tableContainer" style="width: 100%;margin-top: 5px;">
@@ -64,11 +70,13 @@
               </div>
               <!--分页器 end-->
             </el-row>
+            <!-- 图谱 -->
             <el-row>
               
             </el-row>
         </el-col>
     </el-row>
+    <!-- 章节目录抽屉 -->
     <el-drawer v-model="drawer" direction="ltr" :with-header="false">
     <template #default>
         <el-radio-group v-model="radio1" class="ml-4">
@@ -85,7 +93,7 @@
         <el-button type="primary" @click="confirmClick">确认</el-button>
       </div>
     </template>
-  </el-drawer>
+    </el-drawer>
           <!--添加词条标注对话框-->
           <el-dialog title="添加词条标注" v-model="dialogAddFormVisible">
                 <el-form :model="addForm">
@@ -140,16 +148,17 @@ import { getDirectoryListAPI, getDirectoryListByBookIdAPI, getRelationshipAPI, g
 import router from "../../router";
 //文章加载
 const bookLoading = ref<boolean>(false)
-  const svg =ref(`
-        <path class="path" d="
-          M 30 15
-          L 28 17
-          M 25.61 25.61
-          A 15 15, 0, 0, 1, 15 30
-          A 15 15, 0, 1, 1, 27.99 7.5
-          L 15 15
-        " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
-      `) 
+//自定义加载图标
+const svg =ref(`
+    <path class="path" d="
+      M 30 15
+      L 28 17
+      M 25.61 25.61
+      A 15 15, 0, 0, 1, 15 30
+      A 15 15, 0, 1, 1, 27.99 7.5
+      L 15 15
+    " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
+  `) 
 //章节赋值
 const baseInfoDirectoryData = ref([]);
 //书籍赋值
@@ -163,6 +172,7 @@ const scrollbarHeight = ref('550px')
 const cancelClick = () => {
   drawer.value = false
 }
+//确认选择章节
 const confirmClick= () => {
   ElMessageBox.confirm(`选择 ${radio1.value.directoryName} 章?`)
     .then(() => {
@@ -199,6 +209,7 @@ const searchFormRef = ref<FormInstance>()
 const searchForm = reactive({
   entryName:"",
 })
+
 //词条分页查询接口 查询接口
 const getDirectoryList = async() =>{
   loading.value = true;
@@ -223,6 +234,7 @@ const getDirectoryListByBookId = async() =>{
         baseInfoDirectoryData.value = res.data.data;
     }catch(e){console.log('e',e);}
 }
+
 //根据目录id获取章节数据 可传背景颜色
 const getTaskChapter = async(id:string) =>{
   bookLoading.value = true;
@@ -245,6 +257,7 @@ const getRelationship = async() =>{
         baseInfoBoolData.value = res.data.data;  
     }catch(e){console.log('e',e);}
 }
+
  //添加词条标注对话框开关
  const dialogAddFormVisible = ref<boolean>(false);
   const addForm = reactive({
@@ -266,6 +279,7 @@ const getRelationship = async() =>{
     dialogAddFormVisible.value = false;
     await getDirectoryList();
   }
+
 //关系选项
 let RelationshipList = reactive({RelationshipListCode:[] as any})
 //获取关系列表
@@ -286,6 +300,7 @@ const getRelationshipList = async() => {
         console.log(e,'e');
     }
 } 
+
 //词条标注接口
 const saveEntryMapper = async() =>{
     try{
@@ -308,6 +323,7 @@ const saveEntryMapper = async() =>{
         }
     }catch(e){console.log('e',e);}
 }
+
 //路由参数
 const RESROUTER = router.currentRoute.value.query as any;
 onMounted (async() => {
