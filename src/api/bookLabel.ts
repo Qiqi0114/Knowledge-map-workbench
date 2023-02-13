@@ -43,3 +43,50 @@ export function getTaskChapterAPI(
     params:param
   })
 }
+
+//词条分页查询接口 查询接口
+export function getDirectoryListAPI(
+  param: {
+    //书籍id
+    bookId:string,
+    //词条名称
+    entryName:string,
+    //分页
+    pageNum:number,
+    pageSize:number,
+  }) {
+  return request({
+    url: '/map_tab/knowledgeMapTable/book/getDirectoryList',
+    method: 'get',
+    params:param
+  })
+}
+
+//关系列表
+export function getRelationshipAPI() {
+  return request({
+    url: '/map_tab/knowledgeMapTable/book/getRelationship',
+    method: 'get',
+  })
+}
+
+//词条标注接口
+export function saveEntryMapperAPI(
+  param: {
+    //词条名称
+    entryName:string,
+    //词条解释 
+    entryText:string,
+    //书籍id
+    bookId:string,
+    //父id
+    parentId:string,
+    //关系id
+    relationshipId:string,
+  }) {
+  return request({
+    url: '/map_tab/knowledgeMapTable/book/saveEntryMapper',
+    method: 'post',
+    data:param
+  })
+}
