@@ -1,7 +1,7 @@
 <template>
     <el-row>
       <!-- 左侧书籍文章区域 -->
-        <el-col :span="12" >
+        <el-col :span="12"  @mouseleave="mouseOut()">
             <!-- 章节目录按钮 -->
             <div class="grid-content">
                 <el-icon v-if="drawer" :size="30" style="float: left;padding: 15px;" @click="drawer = true"><Expand /></el-icon>
@@ -16,7 +16,7 @@
                 :element-loading-spinner="svg"
                 element-loading-svg-view-box="-10, -10, 50, 50"
                 element-loading-background="rgba(122, 122, 122, 0.8)"
-                ><div id="directoryText"></div></div>
+                ><div id="directoryText" @mouseup="mouseSelected()"></div></div>
             </el-scrollbar>
         </el-col>
       <!-- 右侧词条、图谱区域 -->
@@ -45,7 +45,7 @@
               <div ref="tableContainer" style="width: 100%;margin-top: 5px;">
                   <el-table :data="baseInfoTableData" border
                       ref="baseInfoTableDataRef" v-loading="loading" :header-cell-style="{ background: '#F5F6FA' }"
-                      :height="200">
+                      :height="200" @mouseover="mouseOverTable()">
                       <el-table-column fixed="left" label="操作" min-width="80">
                           <template #default="scope">
                               <el-button type="danger" link @click="">删除</el-button>
@@ -105,7 +105,7 @@
                     </el-col>
                     <el-col :span="12">
                       <el-form-item label="词条解释">
-                        <el-input v-model="addForm.entryText" style="width:250px"></el-input>
+                        <el-input v-model="addForm.entryText" :disabled ="entryTextFlag" style="width:250px"></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12">
@@ -131,7 +131,7 @@
                 </el-form>
                 <template #footer>
                     <span class="dialog-footer">
-                    <el-button @click="dialogAddFormVisible = false">取 消</el-button>
+                    <el-button @click="addEntryCancel()">取 消</el-button>
                     <el-button type="primary" @click="addEntryConfirm()"
                         >确 定</el-button
                     >
@@ -250,6 +250,37 @@ const getTaskChapter = async(id:string) =>{
     bookLoading.value = false;
 }
 
+//选中拖拽
+let selection =  ref<string>('');
+//鼠标光标选中事件
+const mouseSelected = () =>{
+   //获取Selection对象
+   selection.value = window.getSelection().toString();
+}
+
+//选中拖拽存储
+const entryWords = ref<string>('');
+//鼠标离开区域事件
+const mouseOut = () =>{
+  entryWords.value = selection.value;
+  entryTextFlag.value = true;
+  console.log(entryWords.value);
+  
+}
+//词条解释禁用标记
+const entryTextFlag = ref<boolean>(false);
+//父id、关系id禁用标记
+const nodeFlag = ref<boolean>(false);
+//鼠标移入词条表格触发的事件
+const mouseOverTable = () =>{
+  if(entryWords.value !== '' ){
+    addForm.entryName = entryWords.value;
+    addForm.bookId = RESROUTER.id;
+    dialogAddFormVisible.value = true;
+  }
+}
+//鼠标移入词条表格阻止弹窗标记
+const stopFlag = ref<boolean>(false);
 //根据目录id获取章节数据 可传背景颜色
 const getRelationship = async() =>{
     try{
@@ -269,9 +300,15 @@ const getRelationship = async() =>{
   });
   //添加词条标注
   const addEntry = async() => {
+    //判断拖拽未添加清空之前数据
+    if(entryWords.value !== ''){
+      entryWords.value = '';
+      addForm.entryName = '';
+      addForm.entryText = '';
+      addForm.parentId = '';
+      addForm.relationshipId = '';
+    }
     dialogAddFormVisible.value = true;
-    addForm.bookId = RESROUTER.id;
-    await getRelationshipList();
   }
   //确认词条标注
   const addEntryConfirm = async() => {
@@ -279,7 +316,16 @@ const getRelationship = async() =>{
     dialogAddFormVisible.value = false;
     await getDirectoryList();
   }
-
+//取消确认词条标注
+const addEntryCancel = async() =>{
+  dialogAddFormVisible.value = false;
+  entryTextFlag.value = false;
+  entryWords.value = '';
+  addForm.entryName = '';
+  addForm.entryText = '';
+  addForm.parentId = '';
+  addForm.relationshipId = '';
+}
 //关系选项
 let RelationshipList = reactive({RelationshipListCode:[] as any})
 //获取关系列表
@@ -318,6 +364,11 @@ const saveEntryMapper = async() =>{
               type: "success",
           });
           getDirectoryList();
+          entryWords.value = '';
+          addForm.entryName = '';
+          addForm.entryText = '';
+          addForm.parentId = '';
+          addForm.relationshipId = '';
         } else {
             ElMessage.error(res.data.msg)
         }
@@ -330,6 +381,7 @@ onMounted (async() => {
     await getDirectoryListByBookId();
     await getTaskChapter(baseInfoDirectoryData.value[0].id)
     await getDirectoryList();
+    await getRelationshipList();
 })
 </script>
 
