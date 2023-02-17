@@ -13,7 +13,7 @@
                 <div
                  v-loading="bookLoading"
                  element-loading-text="七七拼命加载"
-                :element-loading-spinner="svg"
+                :element-loading-spinner="svgLoad"
                 element-loading-svg-view-box="-10, -10, 50, 50"
                 element-loading-background="rgba(122, 122, 122, 0.8)"
                 ><div id="directoryText" @mouseup="mouseSelected()"></div></div>
@@ -72,7 +72,7 @@
             </el-row>
             <!-- 图谱 -->
             <el-row>
-              
+              <div id="force-container"></div>
             </el-row>
         </el-col>
     </el-row>
@@ -144,12 +144,232 @@
 import { ElMessage, ElMessageBox, FormInstance } from "element-plus";
 import { onMounted, reactive, ref } from "vue-demi";
 import { Expand,Fold } from '@element-plus/icons-vue'
+import * as d3 from 'd3'
 import { getDirectoryListAPI, getDirectoryListByBookIdAPI, getRelationshipAPI, getTaskChapterAPI, saveEntryMapperAPI } from "../../api/bookLabel";
 import router from "../../router";
+var color=d3.schemeCategory10;
+var nodes = [
+				{"name":"爱情公寓"},
+				{"name":"曾小贤"},
+				{"name":"胡一菲"},
+				{"name":"吕子乔"},
+				{"name":"陈美嘉"},
+				{"name":"关谷神奇"},
+				{"name":"唐悠悠"},
+				{"name":"陆展博"},
+				{"name":"林宛瑜"},
+				{"name":"张伟"},
+				{"name":"诸葛大力"},
+				{"name":"秦羽墨"},
+				{"name":"诺澜"},
+				{"name":"Lisa榕"},
+				{"name":"杜俊"},
+				{"name":"赵海棠"},
+				{"name":"咖喱酱"}
+			];
+var links = [
+				{"source":1,"target":0,"relation":"租户"},
+				{"source":2,"target":0,"relation":"租户"},
+				{"source":3,"target":0,"relation":"租户"},
+				{"source":4,"target":0,"relation":"租户"},
+				{"source":5,"target":0,"relation":"租户"},
+				{"source":6,"target":0,"relation":"租户"},
+				{"source":7,"target":0,"relation":"租户"},
+				{"source":8,"target":0,"relation":"租户"},
+				{"source":9,"target":0,"relation":"租户"},
+				{"source":10,"target":0,"relation":"租户"},
+				{"source":11,"target":0,"relation":"租户"},
+				{"source":15,"target":0,"relation":"租户"},
+				{"source":16,"target":0,"relation":"租户"},
+				{"source":1,"target":2,"relation":"夫妻"},
+				{"source":1,"target":13,"relation":"上下级"},
+				{"source":1,"target":12,"relation":"同事&喜欢"},
+				{"source":2,"target":7,"relation":"姐弟"},
+				{"source":2,"target":11,"relation":"同学"},
+				{"source":2,"target":12,"relation":"情敌"},
+				{"source":3,"target":4,"relation":"夫妻"},
+				{"source":3,"target":6,"relation":"小姨妈/大外甥"},
+				{"source":3,"target":13,"relation":"暗恋"},
+				{"source":4,"target":6,"relation":"闺蜜"},
+				{"source":5,"target":6,"relation":"夫妻"},
+				{"source":5,"target":14,"relation":"师兄弟"},
+				{"source":7,"target":8,"relation":"情侣"},
+				{"source":9,"target":10,"relation":"情侣"},
+				{"source":9,"target":15,"relation":"情敌"},
+				{"source":9,"target":16,"relation":"助理"},
+				{"source":10,"target":15,"relation":"同学"},
+				{"source":10,"target":2,"relation":"师生"},
+				{"source":15,"target":10,"relation":"追求"},
+				{"source":15,"target":2,"relation":"师生"},
+				{"source":13,"target":12,"relation":"同学"}
+			];
+
+onMounted(async() => {
+ await drawBarChart(nodes,links);
+})
+
+
+//
+const visibleFlag = ref<boolean>(false);
+const drawBarChart = async(nodes: { name: string; }[],links: { source: number; target: number; relation: string; }[]) => {
+            var w=window.innerWidth|| document.documentElement.clientWidth|| document.body.clientWidth;
+			var h=window.innerHeight|| document.documentElement.clientHeight|| document.body.clientHeight;
+			w=w*0.48;
+			h=h*0.4;
+            // 容器
+            var svg=d3.select("#force-container")
+                        .append("svg")
+                        .attr("width",w)
+                        .attr("height",h*1.2);
+            // 新建一个力导向图
+            var forceSimulation = d3.forceSimulation()
+                                    .force("link",d3.forceLink())
+                                    .force("charge",d3.forceManyBody().strength(-800))
+                                    .force("center",d3.forceCenter(w/2,h/2));
+            forceSimulation.nodes(nodes)
+                           .on("tick");
+            forceSimulation.force("link")
+                           .links(links)
+                           .distance(180);
+            // 关系路径
+            var link=svg.selectAll(".link")
+                        .data(links)
+                        .enter()
+                        .append("line")
+                        .attr("class","link")
+                        .style("stroke-width",1)
+                        .style("stroke",(d: any,i: number)=>color[i%10])
+					    .style("opacity",0.6);
+            // 节点
+            var node=svg.selectAll(".node")
+                        .data(nodes)
+                        .enter()
+                        .append("circle")
+                        .attr("r",16)
+                        .style("fill",(d: any,i: number)=>color[i%10])
+                        .call(drag()); 
+                node.on('click', (d: any)=> {
+              visibleFlag.value = !visibleFlag.value
+              toggleMenu(d3.select(".node"), d, visibleFlag.value)
+            })
+            forceSimulation.on("tick",()=>{
+                link.attr("x1",(d: { source: { x: any; }; })=>d.source.x)
+                    .attr("y1",(d: { source: { y: any; }; })=>d.source.y)
+                    .attr("x2",(d: { target: { x: any; }; })=>d.target.x)
+                    .attr("y2",(d: { target: { y: any; }; })=>d.target.y);
+                node.attr("cx",(d: { x: any; })=>d.x)
+                    .attr("cy",(d: { y: any; })=>d.y);
+                edges_text.attr("x",(d: { source: { x: any; }; target: { x: any; }; })=>(d.source.x + d.target.x) / 2 )
+                          .attr("y",(d: { source: { y: any; }; target: { y: any; }; })=>(d.source.y + d.target.y) / 2 );
+                                texts.attr("x",(d: { x: any; })=>d.x)
+                          .attr("y",(d: { y: any; })=>d.y);
+            });
+            //拖拽
+            function drag()
+            {
+                function dragstarted(event: { active: any; },d: { fx: any; x: any; fy: any; y: any; }){
+                    if(!event.active)   forceSimulation.alphaTarget(0.3).restart();
+                    d.fx=d.x;
+                    d.fy=d.y;
+                }
+                function dragged(event: { x: any; y: any; },d: { fx: any; fy: any; }){
+                    d.fx=event.x;
+                    d.fy=event.y;
+                }
+                function dragended(event: { active: any; },d: { fx: null; fy: null; }){
+                    if(!event.active)   forceSimulation.alphaTarget(0);
+                    d.fx=null;
+                    d.fy=null;
+                }
+                return d3.drag()
+                         .on("start",dragstarted)
+                         .on("drag",dragged)
+                         .on("end",dragended);
+            };
+            var edges_text = svg.selectAll(".linetext")
+							.data(links)
+							.enter()
+							.append("text")
+							.attr("class","linetext")
+							.text(d=> d.relation)
+							.style("stroke",(d: any,i: number)=>color[i%10])
+							.style("font-size",10);	                
+            var texts=svg.selectAll(".forceText")
+                        .data(nodes)
+                        .enter()
+                        .append("text")
+                        .attr("class","forceText")
+                        .style("stroke",(d: any,i: number)=>color[i%10])
+                        .style("font-size","12px")
+                        .attr("text-anchor","middle")
+                        .attr("dy",30)
+                        .text((d: { name: any; })=>d.name);
+
+                        /**
+       * @name: 生成操作菜单
+       * @param {*} current 当前元素
+       * @param {*} d 当前元素对应的数据
+       * @param {*} flag 显隐
+       */
+const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: number): { (): any; new(): any; attr: { (arg0: string, arg1: number): any; new(): any; }; }; new(): any; }; }; new(): any; }; }; select: (arg0: string) => { (): any; new(): any; append: { (arg0: string): { (): any; new(): any; classed: { (arg0: string, arg1: boolean): any; new(): any; }; }; new(): any; }; }; }, d: any, flag: boolean) => {
+        const currentD = d
+        console.log(currentD);
+        
+        const data = [{
+          population: 30,
+          value: '删除',
+          type: 'delete'
+        }, {
+          population: 30,
+          value: '修改',
+          type: 'showOn'
+        }]
+        // 创建一个环生成器
+        const arc = d3.arc()
+          .innerRadius(80) // 内半径
+          .outerRadius(35) // 外半径
+        const pie = d3.pie()
+          .value(function (d: { population: any; }) {
+            return d.population
+          })
+          .sort(null)
+        const pieData = pie(data)
+        const pieAngle = pieData.map(function (p: { startAngle: any; endAngle: any; }) {
+          return (p.startAngle + p.endAngle) / 2 / Math.PI * 180
+        })
+        // 菜单容器
+        const g = current
+          .append('circle')
+          .attr('class', 'menu-circle')
+          .attr('width', 100)
+          .attr('height', 100)
+        const Pie = g.append('circle')
+        Pie.selectAll('line')
+          .data(pie(data))
+          .enter()
+          .append('line')
+          .attr('d', arc)
+          .attr('fill', '#d3d7dc')
+          .style('stroke', '#fff')
+          .style('cursor', 'pointer')
+          .on('click', function (d) {
+            if (d.data.type === 'delete') {
+              deleteNodeAndLinks(currentD)
+            } else if (d.data.type === 'showOn') {
+              deleteNextNodes(currentD)
+            } else {
+              addNodesAndLinks(currentD)
+            }
+            d3.event.stopPropagation()
+          })
+
+      }
+}
+
 //文章加载
 const bookLoading = ref<boolean>(false)
 //自定义加载图标
-const svg =ref(`
+const svgLoad =ref(`
     <path class="path" d="
       M 30 15
       L 28 17
@@ -403,4 +623,9 @@ onMounted (async() => {
     margin-top: 30px;
     height: 100%;
 } */
+
+#force-container {
+  border: 1px solid #ccc;
+}
+
 </style>
