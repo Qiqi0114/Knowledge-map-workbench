@@ -149,59 +149,16 @@ import { getDirectoryListAPI, getDirectoryListByBookIdAPI, getRelationshipAPI, g
 import router from "../../router";
 var color=d3.schemeCategory10;
 var nodes = [
-				{"name":"爱情公寓"},
-				{"name":"曾小贤"},
-				{"name":"胡一菲"},
-				{"name":"吕子乔"},
-				{"name":"陈美嘉"},
-				{"name":"关谷神奇"},
-				{"name":"唐悠悠"},
-				{"name":"陆展博"},
-				{"name":"林宛瑜"},
-				{"name":"张伟"},
-				{"name":"诸葛大力"},
-				{"name":"秦羽墨"},
-				{"name":"诺澜"},
-				{"name":"Lisa榕"},
-				{"name":"杜俊"},
-				{"name":"赵海棠"},
-				{"name":"咖喱酱"}
+				{"name":"陈立"},
+				{"name":"周陈"},
+				{"name":"黑月妖狼"},
+				{"name":"紫鳞妖蟒"},
 			];
 var links = [
-				{"source":1,"target":0,"relation":"租户"},
-				{"source":2,"target":0,"relation":"租户"},
-				{"source":3,"target":0,"relation":"租户"},
-				{"source":4,"target":0,"relation":"租户"},
-				{"source":5,"target":0,"relation":"租户"},
-				{"source":6,"target":0,"relation":"租户"},
-				{"source":7,"target":0,"relation":"租户"},
-				{"source":8,"target":0,"relation":"租户"},
-				{"source":9,"target":0,"relation":"租户"},
-				{"source":10,"target":0,"relation":"租户"},
-				{"source":11,"target":0,"relation":"租户"},
-				{"source":15,"target":0,"relation":"租户"},
-				{"source":16,"target":0,"relation":"租户"},
-				{"source":1,"target":2,"relation":"夫妻"},
-				{"source":1,"target":13,"relation":"上下级"},
-				{"source":1,"target":12,"relation":"同事&喜欢"},
-				{"source":2,"target":7,"relation":"姐弟"},
-				{"source":2,"target":11,"relation":"同学"},
-				{"source":2,"target":12,"relation":"情敌"},
-				{"source":3,"target":4,"relation":"夫妻"},
-				{"source":3,"target":6,"relation":"小姨妈/大外甥"},
-				{"source":3,"target":13,"relation":"暗恋"},
-				{"source":4,"target":6,"relation":"闺蜜"},
-				{"source":5,"target":6,"relation":"夫妻"},
-				{"source":5,"target":14,"relation":"师兄弟"},
-				{"source":7,"target":8,"relation":"情侣"},
-				{"source":9,"target":10,"relation":"情侣"},
-				{"source":9,"target":15,"relation":"情敌"},
-				{"source":9,"target":16,"relation":"助理"},
-				{"source":10,"target":15,"relation":"同学"},
-				{"source":10,"target":2,"relation":"师生"},
-				{"source":15,"target":10,"relation":"追求"},
-				{"source":15,"target":2,"relation":"师生"},
-				{"source":13,"target":12,"relation":"同学"}
+				{"source":1,"target":0,"relation":"单向"},
+				{"source":2,"target":0,"relation":"双向"},
+				{"source":3,"target":0,"relation":"包含"},
+				{"source":1,"target":2,"relation":"反向"},
 			];
 
 onMounted(async() => {
@@ -213,9 +170,9 @@ onMounted(async() => {
 const visibleFlag = ref<boolean>(false);
 const drawBarChart = async(nodes: { name: string; }[],links: { source: number; target: number; relation: string; }[]) => {
             var w=window.innerWidth|| document.documentElement.clientWidth|| document.body.clientWidth;
-			var h=window.innerHeight|| document.documentElement.clientHeight|| document.body.clientHeight;
-			w=w*0.48;
-			h=h*0.4;
+            var h=window.innerHeight|| document.documentElement.clientHeight|| document.body.clientHeight;
+            w=w*0.48;
+            h=h*0.37;
             // 容器
             var svg=d3.select("#force-container")
                         .append("svg")
@@ -224,13 +181,13 @@ const drawBarChart = async(nodes: { name: string; }[],links: { source: number; t
             // 新建一个力导向图
             var forceSimulation = d3.forceSimulation()
                                     .force("link",d3.forceLink())
-                                    .force("charge",d3.forceManyBody().strength(-800))
+                                    .force("charge",d3.forceManyBody().strength(-200))
                                     .force("center",d3.forceCenter(w/2,h/2));
             forceSimulation.nodes(nodes)
                            .on("tick");
             forceSimulation.force("link")
                            .links(links)
-                           .distance(180);
+                           .distance(100);
             // 关系路径
             var link=svg.selectAll(".link")
                         .data(links)
@@ -238,20 +195,21 @@ const drawBarChart = async(nodes: { name: string; }[],links: { source: number; t
                         .append("line")
                         .attr("class","link")
                         .style("stroke-width",1)
-                        .style("stroke",(d: any,i: number)=>color[i%10])
+                        .style("stroke",(links: { relation: string; })=>{if(links.relation === '单向'){return "#f80000"} else if(links.relation === '双向'){return "#6c64ff" }else if(links.relation === '包含'){return "#00f811"} else if(links.relation === '反向'){return "#f8f400"}})
 					    .style("opacity",0.6);
             // 节点
             var node=svg.selectAll(".node")
                         .data(nodes)
                         .enter()
                         .append("circle")
-                        .attr("r",16)
+                        .attr("r",8)
                         .style("fill",(d: any,i: number)=>color[i%10])
                         .call(drag()); 
                 node.on('click', (d: any)=> {
               visibleFlag.value = !visibleFlag.value
               toggleMenu(d3.select(".node"), d, visibleFlag.value)
             })
+            //更新连线坐标
             forceSimulation.on("tick",()=>{
                 link.attr("x1",(d: { source: { x: any; }; })=>d.source.x)
                     .attr("y1",(d: { source: { y: any; }; })=>d.source.y)
@@ -286,13 +244,14 @@ const drawBarChart = async(nodes: { name: string; }[],links: { source: number; t
                          .on("drag",dragged)
                          .on("end",dragended);
             };
+            //添加描述节点的文字
             var edges_text = svg.selectAll(".linetext")
 							.data(links)
 							.enter()
 							.append("text")
 							.attr("class","linetext")
-							.text(d=> d.relation)
-							.style("stroke",(d: any,i: number)=>color[i%10])
+							.text((d: { relation: any; })=> d.relation)
+							.style("stroke",(links: { relation: string; })=>{if(links.relation === '单向'){return "#f80000"} else if(links.relation === '双向'){return "#6c64ff" }else if(links.relation === '包含'){return "#00f811"} else if(links.relation === '反向'){return "#f8f400"}})
 							.style("font-size",10);	                
             var texts=svg.selectAll(".forceText")
                         .data(nodes)
