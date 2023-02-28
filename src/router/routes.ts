@@ -2,7 +2,7 @@
 import { RouteRecordRaw } from "vue-router"
 
 const routes:Array<RouteRecordRaw> = [
-    {
+    { //配置默认路由
       path: "/",
       redirect: "/login",        
     },
