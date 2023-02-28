@@ -147,6 +147,7 @@ import { Expand,Fold } from '@element-plus/icons-vue'
 import * as d3 from 'd3'
 import { getDirectoryListAPI, getDirectoryListByBookIdAPI, getRelationshipAPI, getTaskChapterAPI, saveEntryMapperAPI } from "../../api/bookLabel";
 import router from "../../router";
+import { log } from "console";
 var color=d3.schemeCategory10;
 var nodes = [
 				{"name":"陈立"},
@@ -178,46 +179,159 @@ const drawBarChart = async(nodes: { name: string; }[],links: { source: number; t
                         .append("svg")
                         .attr("width",w)
                         .attr("height",h*1.2);
+            // 缩放
+            const zoom = d3.zoom()
+              .on('zoom', function () {
+                svg.attr('transform', d3.zoomTransform(svg.node()))
+                // const tran = d3.zoomTransform(svg.node())
+                // const _k = tran.k
+                // console.log(tran)
+                // console.log(Math.floor(_k * 100) / 100)
+              })
+            svg.call(zoom)
+            d3.select('#reset')
+              .on('click', function () {
+                svg.call(zoom.transform, d3.zoomIdentity)
+              })
+            d3.select('#zoomIn')
+              .on('click', function () {
+                zoom.scaleBy(svg, 1.1)
+              })
+            d3.select('#zoomOut')
+              .on('click', function () {
+                zoom.scaleBy(svg, 0.9) // 执行该方法后 会触发 zoom 事件 0.9 缩小
+              })
             // 新建一个力导向图
             var forceSimulation = d3.forceSimulation()
+                                    // 连接线
                                     .force("link",d3.forceLink())
+                                    // 引力
                                     .force("charge",d3.forceManyBody().strength(-200))
+                                    // 整个实例中心
                                     .force("center",d3.forceCenter(w/2,h/2));
+            // 为节点分配坐标
             forceSimulation.nodes(nodes)
                            .on("tick");
+            // 连接线
             forceSimulation.force("link")
                            .links(links)
                            .distance(100);
             // 关系路径
-            var link=svg.selectAll(".link")
+            var link=svg.selectAll("link")
                         .data(links)
                         .enter()
                         .append("line")
                         .attr("class","link")
                         .style("stroke-width",1)
                         .style("stroke",(links: { relation: string; })=>{if(links.relation === '单向'){return "#f80000"} else if(links.relation === '双向'){return "#6c64ff" }else if(links.relation === '包含'){return "#00f811"} else if(links.relation === '反向'){return "#f8f400"}})
-					    .style("opacity",0.6);
-            // 节点
-            var node=svg.selectAll(".node")
+					    .style("opacity",0.6)
+      //添加描述文字
+            var edges_text = svg.selectAll(".linetext")
+							.data(links)
+							.enter()
+							.append("text")
+							.attr("class","linetext")
+							.text((d: { relation: any; })=> d.relation)
+							.style("stroke",(links: { relation: string; })=>{if(links.relation === '单向'){return "#f80000"} else if(links.relation === '双向'){return "#6c64ff" }else if(links.relation === '包含'){return "#00f811"} else if(links.relation === '反向'){return "#f8f400"}})
+							.style("font-size",10);	  
+       
+            var texts=svg.selectAll(".forceText")
                         .data(nodes)
                         .enter()
+                        .append("text")
+                        .attr("class","forceText")
+                        .style("stroke",(d: any,i: number)=>color[i%10])
+                        .style("font-size","12px")
+                        .attr("text-anchor","middle")
+                        .attr("dy",30)
+                        .text((d: { name: any; })=>d.name);
+            // 节点
+            var node=svg.append('g')
+                        .attr('class', 'node-container')
+                        .selectAll('circle')
+                        .data(nodes, (d: { name: any; }) => d.name)
+                        .enter()
                         .append("circle")
-                        .attr("r",8)
+                        .attr("r",15)
                         .style("fill",(d: any,i: number)=>color[i%10])
-                        .call(drag()); 
-                node.on('click', (d: any)=> {
-              visibleFlag.value = !visibleFlag.value
-              toggleMenu(d3.select(".node"), d, visibleFlag.value)
-            })
-            //更新连线坐标
-            forceSimulation.on("tick",()=>{
+                        .call(drag()); //使得节点能够拖动
+                        node.data(nodes, (d: { name: any; }) => d.name)
+                            .join(
+                              (enter: { append: (arg0: string) => { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: (d: any) => string): any; new(): any; }; }; new(): any; }; }; }) =>
+                                enter.append('g')
+                                  .attr('class', 'single-node')
+                                  .attr('id', (d) => {
+                                    return 'single-node' + d.id
+                                  })
+                            )
+                            .on('click',  (d) => {
+                              visibleFlag.value = visibleFlag.value
+                              console.log(d)
+                              
+                              toggleMenu(d3.select('g'), d.target.__data__, visibleFlag)
+                            })
+                        d3.drag()
+                        d3.selectAll('.single-node')
+                          .append('circle')
+                          .attr('r', 30)
+                          .attr('fill', nodeColor)
+                          .style('cursor', 'pointer')
+                        // 节点文字
+                        d3.selectAll('.single-node')
+                          .append('text')
+                          .attr('y', 0)
+                          .attr('dy', 5)
+                          .attr('text-anchor', 'middle')
+                          .style('cursor', 'pointer')
+
+          // 关系路径
+/*           link = link
+            .data(links, d => [d.source, d.target])
+            .join(
+              (              enter: { append: (arg0: string) => { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: (d: any) => string): { (): any; new(): any; attr: { (arg0: string, arg1: string): any; new(): any; }; }; new(): any; }; }; new(): any; }; }; }) =>
+                enter.append('line')
+                  .attr('class', 'single-line')
+                  .attr('id', (d) => {
+                    return 'single-line'
+                  })
+                  .attr('marker-end', 'url(#arrow-marker)') // 根据箭头标记的 id 号标记箭头
+            ) */
+
+          // 路径文字
+/*           linkText = linkText
+            .data(links, d => [d.source, d.target])
+            .join(
+              ( enter: { append: (arg0: string) => { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: (d: any) => string): { (): any; new(): any; text: { (arg0: (d: any) => any): { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; style: { (arg0: string, arg1: string): any; new(): any; }; }; new(): any; }; }; new(): any; }; }; new(): any; }; }; new(): any; }; }; new(): any; }; }; new(): any; }; }; }) =>
+                enter.append('text')
+                  .attr('class', 'link-text')
+                  .attr('id', (d) => {
+                    return 'link-text' 
+                  })
+                  .text((d) => {
+                    return d.semantic_type
+                  })
+                  .attr('stroke', '#000')
+                  .attr('stroke-width', '1')
+                  .attr('fill', 'none')
+                  .style('cursor', 'pointer')
+            ) */
+
+            forceSimulation.nodes(nodes)
+          forceSimulation.force('link').links(links)
+          forceSimulation.alpha(1).restart()
+
+            //更新
+            forceSimulation.on("tick",()=>{//对于每一个时间间隔
+              //更新连线坐标
                 link.attr("x1",(d: { source: { x: any; }; })=>d.source.x)
                     .attr("y1",(d: { source: { y: any; }; })=>d.source.y)
                     .attr("x2",(d: { target: { x: any; }; })=>d.target.x)
                     .attr("y2",(d: { target: { y: any; }; })=>d.target.y);
+                    //更新节点坐标
                 node.attr("cx",(d: { x: any; })=>d.x)
                     .attr("cy",(d: { y: any; })=>d.y);
-                edges_text.attr("x",(d: { source: { x: any; }; target: { x: any; }; })=>(d.source.x + d.target.x) / 2 )
+                    //更新文字坐标
+                    edges_text.attr("x",(d: { source: { x: any; }; target: { x: any; }; })=>(d.source.x + d.target.x) / 2 )
                           .attr("y",(d: { source: { y: any; }; target: { y: any; }; })=>(d.source.y + d.target.y) / 2 );
                                 texts.attr("x",(d: { x: any; })=>d.x)
                           .attr("y",(d: { y: any; })=>d.y);
@@ -244,37 +358,18 @@ const drawBarChart = async(nodes: { name: string; }[],links: { source: number; t
                          .on("drag",dragged)
                          .on("end",dragended);
             };
-            //添加描述节点的文字
-            var edges_text = svg.selectAll(".linetext")
-							.data(links)
-							.enter()
-							.append("text")
-							.attr("class","linetext")
-							.text((d: { relation: any; })=> d.relation)
-							.style("stroke",(links: { relation: string; })=>{if(links.relation === '单向'){return "#f80000"} else if(links.relation === '双向'){return "#6c64ff" }else if(links.relation === '包含'){return "#00f811"} else if(links.relation === '反向'){return "#f8f400"}})
-							.style("font-size",10);	                
-            var texts=svg.selectAll(".forceText")
-                        .data(nodes)
-                        .enter()
-                        .append("text")
-                        .attr("class","forceText")
-                        .style("stroke",(d: any,i: number)=>color[i%10])
-                        .style("font-size","12px")
-                        .attr("text-anchor","middle")
-                        .attr("dy",30)
-                        .text((d: { name: any; })=>d.name);
 
-                        /**
+      /**
        * @name: 生成操作菜单
        * @param {*} current 当前元素
        * @param {*} d 当前元素对应的数据
-       * @param {*} flag 显隐
+       * @param {*} visibleFlag 显隐
        */
-const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: number): { (): any; new(): any; attr: { (arg0: string, arg1: number): any; new(): any; }; }; new(): any; }; }; new(): any; }; }; select: (arg0: string) => { (): any; new(): any; append: { (arg0: string): { (): any; new(): any; classed: { (arg0: string, arg1: boolean): any; new(): any; }; }; new(): any; }; }; }, d: any, flag: boolean) => {
+const toggleMenu = (current, d, visibleFlag) => {
         const currentD = d
-        console.log(currentD);
+        console.log(current);
         
-        const data = [{
+        const datas = [{
           population: 30,
           value: '删除',
           type: 'delete'
@@ -282,47 +377,129 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           population: 30,
           value: '修改',
           type: 'showOn'
+        }, {
+          population: 30,
+          value: '展开',
+          type: 'showOff'
         }]
         // 创建一个环生成器
         const arc = d3.arc()
           .innerRadius(80) // 内半径
-          .outerRadius(35) // 外半径
+          .outerRadius(25) // 外半径
         const pie = d3.pie()
           .value(function (d: { population: any; }) {
             return d.population
           })
           .sort(null)
-        const pieData = pie(data)
-        const pieAngle = pieData.map(function (p: { startAngle: any; endAngle: any; }) {
+        const pieData = pie(datas)
+        const pieAngle = pieData.map((p: { startAngle: any; endAngle: any; }) =>{
           return (p.startAngle + p.endAngle) / 2 / Math.PI * 180
         })
         // 菜单容器
         const g = current
-          .append('circle')
+          .append('g')
           .attr('class', 'menu-circle')
           .attr('width', 100)
           .attr('height', 100)
-        const Pie = g.append('circle')
-        Pie.selectAll('line')
-          .data(pie(data))
+        const Pie = g.append('g')
+        Pie.selectAll('path')
+          .data(pie(datas))
           .enter()
-          .append('line')
+          .append('path')
           .attr('d', arc)
           .attr('fill', '#d3d7dc')
           .style('stroke', '#fff')
           .style('cursor', 'pointer')
           .on('click', function (d) {
-            if (d.data.type === 'delete') {
-              deleteNodeAndLinks(currentD)
-            } else if (d.data.type === 'showOn') {
-              deleteNextNodes(currentD)
+            if (d.target.__data__.data.value ==='删除') {
+              console.log(this)
+            } else if (d.target.__data__.data.value ==='修改') {
+              console.log(this)
             } else {
-              addNodesAndLinks(currentD)
             }
             d3.event.stopPropagation()
           })
 
+        // 安妮文字
+        const labelFontSize = 12
+        const labelValRadius = (170 * 0.35 - labelFontSize * 0.35)
+        const labelValRadius1 = (170 * 0.35 + labelFontSize * 0.35)
+        const labelsVals = current
+          .select('.menu-circle')
+          .append('circle')
+          .classed('labelsvals', true)
+        // 定义两条路径以使标签的方向正确
+        labelsVals.append('def')
+          .append('path')
+          .attr('id', 'label-path-1')
+          .attr('d', `m0 ${-labelValRadius} a${labelValRadius} ${labelValRadius} 0 1,1 -0.01 0`)
+        labelsVals.append('def')
+          .append('path')
+          .attr('id', 'label-path-2')
+          .attr('d', `m0 ${-labelValRadius1} a${labelValRadius1} ${labelValRadius1} 0 1,0 0.01 0`)
+        labelsVals.selectAll('text')
+          .data(datas)
+          .enter()
+          .append('text')
+          .attr('dy', function (d: { type: string; }) {
+            if (d.type === 'showOn') {
+              return -5
+            } else {
+              return 5
+            }
+          })
+          .style('font-size', labelFontSize)
+          .style('fill', 'black')
+          .style('font-weight', 'bold')
+          .style('text-anchor', 'middle')
+          .append('textPath')
+          .style('cursor', 'pointer')
+          .attr('href', function (d: any, i: string|number) {
+            const angle = pieAngle[i]
+            if (angle > 90 && angle <= 270) { // 根据角度选择路径
+              return '#label-path-2'
+            } else {
+              return '#label-path-1'
+            }
+          })
+          .attr('startOffset', function (d: any, i: string|number) {
+            const p = pieData[i]
+            const angle = pieAngle[i]
+            const percent = (p.startAngle + p.endAngle) / 2 / 2 / Math.PI * 100
+            if (angle > 90 && angle <= 270) { // 分别计算每条路径的正确百分比
+              return 100 - percent + '%'
+            }
+            return percent + '%'
+          })
+          .text(function (d) {
+            return d.target.__data__.data.value
+          })
+          .on('click', function (d) {
+            if (d.target.__data__.data.value ==='删除') {
+              console.log('1111')
+              
+            } else if (d.target.__data__.data.value ==='修改') {
+              console.log('1111')
+            }
+            d3.event.stopPropagation()
+          }, true)
+        if (!visibleFlag) {
+          d3.selectAll('.menu-circle').remove()
+        } 
       }
+            /**
+       * @name: 设置节点颜色
+       * @param {*} node
+       */
+       function nodeColor (node: { semantic_type: any; }) {
+        const type = node.semantic_type
+        if (_this.typeColor[type]) {
+          return _this.typeColor[type]
+        } else {
+          return '#ddd'
+        }
+      }
+      
 }
 
 //文章加载
