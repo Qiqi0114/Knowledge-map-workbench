@@ -25,12 +25,12 @@ const routes:Array<RouteRecordRaw> = [
             component: () => import("../views/visualization/index.vue"),
         },
         {
-            path: "/home/taskList",
-            name: "taskList",
+            path: "/home/calloutTask",
+            name: "calloutTask",
             meta: {
-                title: "任务列表",
+                title: "我的标注",
             },
-            component: () => import("../views/taskList/index.vue"),
+            component: () => import("../views/calloutTask/index.vue"),
         },
         {
           path: "/home/bookLabel",
@@ -38,15 +38,15 @@ const routes:Array<RouteRecordRaw> = [
           meta: {
               title: "书籍标注",
           },
-          component: () => import("../views/taskList/bookLabel.vue"),
+          component: () => import("../views/calloutTask/bookLabel.vue"),
         },
         {
-            path: "/home/calloutTask",
-            name: "calloutTask",
+            path: "/home/taskList",
+            name: "taskList",
             meta: {
-                title: "标注任务",
+                title: "我的任务",
             },
-            component: () => import("../views/calloutTask/index.vue"),
+            component: () => import("../views/taskList/index.vue"),
         },
       ]
     }
