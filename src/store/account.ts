@@ -36,7 +36,7 @@ const menu: Module<AccountState, RootState> = {
             const type = payload.type;
             const {data} = await loginAPI({userPhone, passWord});        
             if(data.code == '200'){
-                router.push({ path: "/home/taskList", query: {} })
+                router.push({ path: "/home/visualization", query: {} })
                 ElMessage.success({
                   message: data.msg,
                   type: 'success',
