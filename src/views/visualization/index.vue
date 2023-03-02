@@ -1,11 +1,17 @@
 <template>
+    <div>
+      <D3 />
+    </div>
+  </template>
   
-</template>
-
-<script lang="ts" setup>
-
-</script>
-
-<style lang="scss" scoped>
-
-</style>
+  <script >
+  import D3 from '../../components/D3.vue'
+  
+  export default {
+    name: '',
+    components: {
+      D3
+    }
+  }
+  </script>
+  
