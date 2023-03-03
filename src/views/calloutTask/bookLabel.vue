@@ -162,19 +162,11 @@ import * as d3 from 'd3'
 import { getDirectoryListAPI, getDirectoryListByBookIdAPI, getKnowledgeNodeAPI, getRelationshipAPI, getTaskChapterAPI, saveEntryMapperAPI } from "../../api/bookLabel";
 import router from "../../router";
 var color=d3.schemeCategory10;
-var nodes = [
-				{id:'1',"name":"陈立"},
-				{id:'2',"name":"周陈"},
-				{id:'3',"name":"黑月妖狼"},
-				{id:'0',"name":"紫鳞妖蟒"},
-			];
-var links = [
-				{"source":1,"target":2,"relation":"单向"},
-
-			];
+var nodes = [];
+var links = [];
 
 onMounted(async() => {
- await drawBarChart(nodes,links);
+ /* await drawBarChart(nodes,links); */
 })
 
 
@@ -189,8 +181,13 @@ const getKnowledgeNode = async(row) =>{
         })
         nodes = res.data.data.nodes;
         links = res.data.data.links;
+        //清空上一个图谱
         var elem = document.getElementById('force-container')
-        elem.parentNode?.removeChild(elem)
+        // 获取 force-container 标签下的所有子节点
+        var pObjs = elem.childNodes;
+        for (var i = pObjs.length - 1; i >= 0; i--) { // 一定要倒序，正序是删不干净的，可自行尝试
+          elem.removeChild(pObjs[i]);
+        }
         await drawBarChart(nodes,links);
     }catch(e){console.log('e',e);}
     nodeLoading.value = false;
@@ -212,11 +209,12 @@ const drawBarChart = async(nodes: { id: string; name: string; }[],links: { sourc
             // 新建一个力导向图
             var forceSimulation = d3.forceSimulation()
                                     // 连接线
-                                    .force("link",d3.forceLink())
+                                    .force("link",d3.forceLink().id(d => d.id))
                                     // 引力
                                     .force("charge",d3.forceManyBody().strength(-200))
                                     // 整个实例中心
                                     .force("center",d3.forceCenter(w/2,h/2))
+                                    forceSimulation.alpha(1).restart()
             // 为节点分配坐标
             forceSimulation.nodes(nodes)
                            .on("tick");
@@ -224,7 +222,7 @@ const drawBarChart = async(nodes: { id: string; name: string; }[],links: { sourc
             forceSimulation.force("link")
                            .links(links)
                            .distance(100);
-
+            
 /*         // 新建一个力导向图
        const simulation = d3.forceSimulation()
                             .force('charge', d3.forceManyBody().strength(-200))
