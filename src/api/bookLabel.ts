@@ -90,3 +90,16 @@ export function saveEntryMapperAPI(
     data:param
   })
 }
+
+//单词条图谱可视化接口
+export function getKnowledgeNodeAPI(
+  param: {
+    //词条id
+    id:string,
+  }) {
+  return request({
+    url: '/map_tab/knowledgeMapTable/book/getKnowledgeNode',
+    method: 'get',
+    params:param
+  })
+}
