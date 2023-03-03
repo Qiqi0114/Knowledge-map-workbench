@@ -31,7 +31,7 @@
 
 import { FormInstance } from 'element-plus/es/components/form';
 import { reactive, ref } from 'vue-demi';
-import router from '../../router';
+import store from '../../store';
 const loginFormRef = ref<FormInstance>();
 const loginForm = reactive({
           userPhone: '',
@@ -39,11 +39,9 @@ const loginForm = reactive({
       });
 
 const submitForm = async(loginFormRef:any) => {
-/*     const res = await loginAPI({userPhone:'18804236200',passWord:'123456'})
-    if(res.data.code == '200'){
-        router.push({ path: "/home", query: {} })
-    } */
-    router.push({ path: "/home/visualization", query: {} })
+  await store.dispatch("appLogin", {
+                    ...loginForm});
+    
 }
 </script>
 
