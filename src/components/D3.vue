@@ -279,7 +279,6 @@ const initD3 = async() =>{
           node
             .on('click', function (d: any) {
               visibleFlag = !visibleFlag
-              console.log(d)
               toggleMenu(d3.select(this), d.target.__data__, visibleFlag)
             })
 /*             .on('mouseover', function (d: { id: string; }) {
@@ -381,8 +380,7 @@ const addNodesAndLinks = (node: { id: any; }) => {
           edgeResult.forEach((item) => {
             links.push(item)
           })
-          console.log(links);
-          
+
           updateObj.update({
             nodes: nodes,
             links: links
@@ -474,6 +472,8 @@ const deleteNodeAndLinks = (node: { id: any; }) => {
         const clickNode = node.id
         d3.selectAll('.single-line').each(function (e: { source: { id: any; }; target: { id: any; }; }) {
           if (e.source.id === node.id || e.target.id === node.id) {
+            console.log(this);
+            
             d3.select(this).remove()
           } else {
             relationList.push(e)
@@ -519,7 +519,6 @@ const deleteNodeAndLinks = (node: { id: any; }) => {
        * @param {*} flag 显隐
        */
 const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: number): { (): any; new(): any; attr: { (arg0: string, arg1: number): any; new(): any; }; }; new(): any; }; }; new(): any; }; }; select: (arg0: string) => { (): any; new(): any; append: { (arg0: string): { (): any; new(): any; classed: { (arg0: string, arg1: boolean): any; new(): any; }; }; new(): any; }; }; }, d: any, flag: boolean) => {
-        console.log(d)
         const currentD = d
         const data = [{
           population: 30,
@@ -563,11 +562,9 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           .style('stroke', '#fff')
           .style('cursor', 'pointer')
           .on('click', function (d) {
-            console.log(d)
-            if (d.target.__data__.data.value === 'delete') {
+            if (d.target.__data__.data.type === 'delete') {
               deleteNodeAndLinks(currentD)
-              console.log(this)
-            } else if (d.target.__data__.data.value === 'showOn') {
+            } else if (d.target.__data__.data.type === 'showOn') {
               deleteNextNodes(currentD)
             } else {
               addNodesAndLinks(currentD)
@@ -641,10 +638,10 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           .text(function (d: { value: any; }) {
             return d.value
           })
-          .on('click', function (d: { type: string; }) {
-            if (d.type === 'delete') {
+          .on('click', function (d) {
+            if (d.target.__data__.data.type === 'delete') {
               deleteNodeAndLinks(currentD)
-            } else if (d.type === 'showOn') {
+            } else if (d.target.__data__.data.type === 'showOn') {
               deleteNextNodes(currentD)
             } else {
               addNodesAndLinks(currentD)
