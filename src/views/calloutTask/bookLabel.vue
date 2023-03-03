@@ -48,7 +48,7 @@
                       :height="200" @mouseover="mouseOverTable()" @row-click="getKnowledgeNode">
                       <el-table-column fixed="left" label="操作" min-width="80">
                           <template #default="scope">
-                              <el-button type="danger" link @click="">删除</el-button>
+                              <el-button type="danger" link @click="delKnowledgeNode(scope.row.id)">删除</el-button>
                           </template>
                       </el-table-column>
                       <el-table-column prop="id" label="词条id" min-width="130" :show-overflow-tooltip="true"/>
@@ -72,16 +72,7 @@
             </el-row>
             <!-- 图谱 -->
             <el-row>
-              <div id="force-container">
-                <div
-                 v-loading="nodeLoading"
-                 element-loading-text="七七拼命加载"
-                :element-loading-spinner="svgLoad"
-                element-loading-svg-view-box="-10, -10, 50, 50"
-                element-loading-background="rgba(122, 122, 122, 0.8)"
-                style="width: 100%;"
-                ></div>
-              </div>
+              <div id="force-container"></div>
             </el-row>
         </el-col>
     </el-row>
@@ -152,6 +143,41 @@
                     </span>
                 </template>
             </el-dialog>
+
+          <!--修改节点对话框-->
+          <el-dialog title="修改节点" v-model="dialogEditFormVisible">
+                <el-form :model="editForm">
+                  <el-row>
+                    <el-col :span="12">
+                      <el-form-item label="父id">
+                            <el-input v-model="editForm.nodeId" :disabled="true" style="width:250px"></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-form-item label="节点名称">
+                            <el-input v-model="editForm.nodeName" style="width:250px"></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-form-item label="关系" prop="relationshipId">
+                        <el-select v-model="editForm.relationshipId"
+                                  filterable  placeholder="请选择关系" style="width:90%" clearable>
+                                <el-option v-for="item in RelationshipList.RelationshipListCode" :key="item.value" :label="item.label"
+                                    :value="item.value" />
+                        </el-select>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </el-form>
+                <template #footer>
+                    <span class="dialog-footer">
+                    <el-button @click="editNodeCancel()">取 消</el-button>
+                    <el-button type="primary" @click="editNodeConfirm()"
+                        >确 定</el-button
+                    >
+                    </span>
+                </template>
+            </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -159,7 +185,7 @@ import { ElMessage, ElMessageBox, FormInstance } from "element-plus";
 import { onMounted, reactive, Ref, ref } from "vue-demi";
 import { Expand,Fold } from '@element-plus/icons-vue'
 import * as d3 from 'd3'
-import { getDirectoryListAPI, getDirectoryListByBookIdAPI, getKnowledgeNodeAPI, getRelationshipAPI, getTaskChapterAPI, saveEntryMapperAPI } from "../../api/bookLabel";
+import { getDeleteNodeByIdAPI, getDirectoryListAPI, getDirectoryListByBookIdAPI, getKnowledgeNodeAPI, getRelationshipAPI, getTaskChapterAPI, saveEntryMapperAPI, uplateNodeNameAPI } from "../../api/bookLabel";
 import router from "../../router";
 var color=d3.schemeCategory10;
 var nodes = [];
@@ -169,15 +195,19 @@ onMounted(async() => {
  /* await drawBarChart(nodes,links); */
 })
 
-
+const entryId = ref<string>('')
 //单词条图谱可视化接口
 const getKnowledgeNode = async(row) =>{
-  nodeLoading.value = true;
+  entryId.value = row.id;
+  await getKnowledgeNodes()
+}
+//单词条图谱可视化接口
+const getKnowledgeNodes = async() =>{
     try{
         nodes = [];
         links = [];
         const res = await getKnowledgeNodeAPI({
-          id:row.id,
+          id:entryId.value,
         })
         nodes = res.data.data.nodes;
         links = res.data.data.links;
@@ -190,9 +220,7 @@ const getKnowledgeNode = async(row) =>{
         }
         await drawBarChart(nodes,links);
     }catch(e){console.log('e',e);}
-    nodeLoading.value = false;
 }
-
 //
 const visibleFlag = ref<boolean>(false);
 const drawBarChart = async(nodes: { id: string; name: string; }[],links: { source: number; target: number; relation: string; }[]) => {
@@ -542,8 +570,8 @@ const drawBarChart = async(nodes: { id: string; name: string; }[],links: { sourc
        */
 const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; attr: { (arg0: string, arg1: string): { (): any; new(): any; attr: { (arg0: string, arg1: number): { (): any; new(): any; attr: { (arg0: string, arg1: number): any; new(): any; }; }; new(): any; }; }; new(): any; }; }; select: (arg0: string) => { (): any; new(): any; append: { (arg0: string): { (): any; new(): any; classed: { (arg0: string, arg1: boolean): any; new(): any; }; }; new(): any; }; }; }, d: any, visibleFlag: Ref<boolean>) => {
         const currentD = d
-        console.log(current);
-        
+        let nodeId = d.id;
+        let nodeName = d.name;
         const datas = [{
           population: 30,
           value: '删除',
@@ -587,9 +615,9 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           .style('cursor', 'pointer')
           .on('click', function (d: { target: { __data__: { data: { value: string; }; }; }; }) {
             if (d.target.__data__.data.value ==='删除') {
-              console.log(this)
+              delKnowledgeNode(nodeId)
             } else if (d.target.__data__.data.value ==='修改') {
-              console.log(this)
+              editNode(nodeId,nodeName);
             } else {
             }
             d3.event.stopPropagation()
@@ -679,8 +707,6 @@ const nodeColor = (node: { semantic_type: any; }) => {
 
 //文章加载
 const bookLoading = ref<boolean>(false)
-//图谱加载
-const nodeLoading = ref<boolean>(false)
 //自定义加载图标
 const svgLoad =ref(`
     <path class="path" d="
@@ -867,6 +893,35 @@ const addEntryCancel = async() =>{
   addForm.parentName = '';
   addForm.relationshipId = '';
 }
+
+ //修改节点对话框开关
+ const dialogEditFormVisible = ref<boolean>(false);
+  const editForm = reactive({
+    nodeId:'',
+    nodeName:'',
+    relationshipId:'',
+  });
+
+  //修改节点标注
+  const editNode = async(id:string,name:string) => {
+    editForm.nodeId=id;
+    editForm.nodeName=name;
+    editForm.relationshipId='';
+    dialogEditFormVisible.value = true;
+  }
+  //确认修改节点
+  const editNodeConfirm = async() => {
+    await uplateNodeName();
+    dialogEditFormVisible.value = false;
+  }
+//取消确认修改节点
+const editNodeCancel = async() =>{
+  dialogEditFormVisible.value = false;
+  editForm.nodeId='';
+  editForm.nodeName='';
+  editForm.relationshipId='';
+}
+
 //关系选项
 let RelationshipList = reactive({RelationshipListCode:[] as any})
 //获取关系列表
@@ -905,6 +960,7 @@ const saveEntryMapper = async() =>{
               type: "success",
           });
           getDirectoryList();
+          getKnowledgeNodes();
           entryWords.value = '';
           addForm.entryName = '';
           addForm.entryText = '';
@@ -917,6 +973,51 @@ const saveEntryMapper = async() =>{
         } else {
             ElMessage.error(res.data.msg)
         }
+    }catch(e){console.log('e',e);}
+}
+
+//词条删除
+const delKnowledgeNode = async(id:string) => {
+  ElMessageBox.confirm("确认删除?", {
+  confirmButtonText: "是",
+  cancelButtonText: "否",
+  type: "warning",
+})
+  .then(async () => {
+      //删除的过渡效果
+      loading.value = true;
+      const res = await getDeleteNodeByIdAPI({id:id});
+      if (res.data.code == 200) {
+          ElMessage({
+              message: "删除成功",
+              duration: 1500,
+              type: "success",
+          });
+          getKnowledgeNodes();
+      } else {
+          ElMessage.error(res.data.msg)
+      }
+      loading.value = false;
+  })
+  .catch(() => {console.log('error');});
+}
+//修改节点
+const uplateNodeName = async() =>{
+    try{
+        const res = await uplateNodeNameAPI({
+            id:editForm.nodeId,
+            name:editForm.nodeName,
+        })
+        if (res.data.code == 200) {
+          ElMessage({
+              message: "修改成功",
+              duration: 1500,
+              type: "success",
+          });
+          getKnowledgeNodes();
+      } else {
+          ElMessage.error(res.data.msg)
+      }
     }catch(e){console.log('e',e);}
 }
 
