@@ -103,3 +103,32 @@ export function getKnowledgeNodeAPI(
     params:param
   })
 }
+
+//节点删除
+export function getDeleteNodeByIdAPI(
+  param: {
+    //词条id
+    id:string,
+  }) {
+  return request({
+    url: '/map_tab/knowledgeMapTable/book/getDeleteNodeById',
+    method: 'get',
+    params:param
+  })
+}
+
+//修改节点接口
+export function uplateNodeNameAPI(
+  param: {
+    //词条id
+    id:string,
+    //节点名称
+    name:string,
+    //关系
+  }) {
+  return request({
+    url: '/map_tab/knowledgeMapTable/book/uplateNodeName',
+    method: 'get',
+    params:param
+  })
+}
