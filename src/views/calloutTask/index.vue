@@ -12,7 +12,7 @@
           class="image"
         />
         <div style="padding: 7px">
-          <span>{{ o.bookName }}</span>
+          <span style="font-size: small;">{{ o.bookName }}</span>
         </div>
         <div>
             <div class="bottom">
@@ -67,9 +67,7 @@ const getTaskBookList = async() => {
             pageNum:pCurrentPage.value,
             pageSize:pPageSize.value,
         })
-        baseInfoCardData.value = res.data.data.records;
-        console.log(baseInfoCardData.value);
-        
+        baseInfoCardData.value = res.data.data.records;   
     }catch(e){console.log('e',e);}
 }
 onMounted(() => {
