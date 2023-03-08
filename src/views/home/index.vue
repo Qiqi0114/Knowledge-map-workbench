@@ -11,7 +11,7 @@
   <el-menu-item   style="margin-left:40px" index="/home/visualization"><el-icon><Briefcase /></el-icon>我的桌面</el-menu-item>
   <el-menu-item   style="margin-left:40px" index="/home/calloutTask"><el-icon><EditPen /></el-icon>我的标注</el-menu-item>
   <el-menu-item   style="margin-left:40px" index="/home/taskList"><el-icon><BellFilled/></el-icon>我的任务</el-menu-item>
-  <el-sub-menu style="margin-left:400px" index="2">
+  <el-sub-menu style="margin-left:800px" index="2">
     <template #title><el-icon><Avatar /></el-icon>账号管理</template>
     <el-menu-item index="/login">退出</el-menu-item>
   </el-sub-menu>
