@@ -9,6 +9,9 @@ const routes:Array<RouteRecordRaw> = [
     {
      path: "/login",
      name: "login",
+     meta: {
+      title: "知识图谱工作台",
+    },
      component: () => import("../views/login/index.vue"),
     },    
     {
