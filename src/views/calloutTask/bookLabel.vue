@@ -445,7 +445,6 @@ const drawBarChart = async(nodes: { id: string; name: string; }[],links: { sourc
                       node
                         .on('click',  (d: { target: { __data__: any; }; }) => {
                            visibleFlag.value = !visibleFlag.value
-                           console.log(d)
                          toggleMenu(d3.select('#single-node'+d.target.__data__.id), d.target.__data__, visibleFlag)
                         })
                         .on('mouseover', function (d) {
@@ -580,10 +579,10 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           population: 30,
           value: '修改',
           type: 'showOn'
-        }, {
+        },{
           population: 30,
-          value: '展开',
-          type: 'showOff'
+          value: '建立',
+          type: 'addOn'
         }]
         // 创建一个环生成器
         const arc = d3.arc()
@@ -629,7 +628,7 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
         const labelValRadius1 = (170 * 0.35 + labelFontSize * 0.35)
         const labelsVals = current
           .select('.menu-circle')
-          .append('circle')
+          .append('g')
           .classed('labelsvals', true)
         // 定义两条路径以使标签的方向正确
         labelsVals.append('def')
@@ -679,10 +678,8 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           })
           .on('click', function (d: { target: { __data__: { data: { value: string; }; }; }; }) {
             if (d.target.__data__.data.value ==='删除') {
-              console.log('1111')
               
             } else if (d.target.__data__.data.value ==='修改') {
-              console.log('1111')
             }
             d3.event.stopPropagation()
           }, true)
