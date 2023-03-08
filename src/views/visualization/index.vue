@@ -43,7 +43,7 @@
   </template>
   
   <script lang="ts" setup>
-import { inject, onMounted, ref } from "vue";
+import { inject, onMounted, onUnmounted, ref } from "vue";
 import { getHistogramAPI, getLineChartAPI, getNewTaskListAPI, getPieChartAPI } from "../../api/visualization";
 import * as echarts from 'echarts';
 //表格数据
@@ -195,6 +195,9 @@ const initChart = () =>{
       getPieChart()
       getNewTaskList()
     })
+    onUnmounted(() => {
+      echarts.dispose;
+    });
   </script>
   
   <style lang="scss" scoped>
