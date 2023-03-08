@@ -18,7 +18,7 @@
     <el-row style="margin-top: 20px;">
       <el-col :span="12"> <div id="zheEcharts"></div></el-col>
       <el-col :span="12">
-        <div style="float: left; font-size: large;font-weight: 800;">新任务列表</div>
+        <div style="font-size: large;font-weight: 800;">新任务列表</div>
         <el-table :data="tableData" border style="width: 100%" :height="200">
           <el-table-column prop="id" label="id" width="100" :show-overflow-tooltip="true"/>
           <el-table-column prop="bookName" label="书籍名称" width="180" :show-overflow-tooltip="true"/>
@@ -37,7 +37,7 @@
       </el-col>
     </el-row>
     <el-row style="margin-top: 30px;">
-      <el-col :span="12"> <div id="zhuEcharts"></div></el-col>
+      <el-col :span="12"><div id="zhuEcharts"></div></el-col>
       <el-col :span="12"><div id="zhu1Echarts"></div></el-col>
     </el-row>
   </template>
@@ -118,12 +118,15 @@ const initChart = () =>{
   // 基于准备好的dom，初始化echarts实例
   var myChart = echarts.init(document.getElementById('zheEcharts'), null, {
     width: 600,
-    height: 250
+    height: 300
   });
   // 绘制图表
   myChart.setOption({
     title: {
-      text: '近一年标记数量折线图'
+      text: '近一年标记数量折线图',
+      x:'center',
+      y:'top',
+      textAlign:'left'
     },
     tooltip: {},
     xAxis: {
@@ -140,12 +143,15 @@ const initChart = () =>{
   });
   var myChart = echarts.init(document.getElementById('zhuEcharts'), null, {
     width: 600,
-    height: 250
+    height: 300
   });
   // 绘制图表
   myChart.setOption({
     title: {
-      text: '近一年的任务完成量柱状图'
+      text: '近一年的任务完成量柱状图',
+      x:'center',
+      y:'top',
+      textAlign:'left'
     },
     tooltip: {},
     xAxis: {
@@ -162,12 +168,15 @@ const initChart = () =>{
   });
   var myChart = echarts.init(document.getElementById('zhu1Echarts'), null, {
     width: 600,
-    height: 250
+    height: 300
   });
   // 绘制图表
   myChart.setOption({
     title: {
-      text: '近一年内完成任务与违反成任务量'
+      text: '近一年内完成任务与违反成任务量',
+      x:'center',
+      y:'top',
+      textAlign:'left'
     },
     tooltip: {},
     series: [
