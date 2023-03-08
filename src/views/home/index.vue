@@ -31,5 +31,6 @@ const activeIndex = ref<string>('/home/visualization')
 <style lang="scss" scoped>
 .router-container{
   width: 100%;
+  height: 100%;
 }
 </style>
