@@ -9,4 +9,9 @@ import routes from "./routes"
     routes
   })
   
+router.beforeEach((to, from, next) => {
+  window.document.title = to.meta.title
+  next()
+})
+
   export default router
