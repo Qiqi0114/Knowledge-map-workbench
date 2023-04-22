@@ -579,10 +579,6 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           population: 30,
           value: '修改',
           type: 'showOn'
-        },{
-          population: 30,
-          value: '建立',
-          type: 'addOn'
         }]
         // 创建一个环生成器
         const arc = d3.arc()
