@@ -26,7 +26,7 @@
           <el-table-column prop="userName" label="用户名" width="120" />
           <el-table-column prop="taskCreateTime" label="创建时间" width="180" :show-overflow-tooltip="true"/>
           <el-table-column prop="taskLoadTime" label="截止时间" width="180" :show-overflow-tooltip="true"/>
-          <el-table-column prop="staticZ" fixed="right" label="状态">
+          <el-table-column prop="staticZ" fixed="right" label="操作">
             <template #default="scope">
               <span v-if="scope.row.staticZ === 1">未完成</span>
               <span v-if="scope.row.staticZ === 2">已完成</span>
@@ -48,7 +48,7 @@ import { getHistogramAPI, getLineChartAPI, getNewTaskListAPI, getPieChartAPI } f
 import * as echarts from 'echarts';
 //表格数据
 const tableData = ref([])
-//近一年内完成任务与违反成任务量
+//获取新任务列表
 const getNewTaskList = async() =>{
     try{
       tableData.value = [];
@@ -57,7 +57,6 @@ const getNewTaskList = async() =>{
           tableData.value = res.data.data
         }else{}
     }catch(e){}
-    await initChart()
 }
 //数据
 const zheXdata = ref<string[]>([])
