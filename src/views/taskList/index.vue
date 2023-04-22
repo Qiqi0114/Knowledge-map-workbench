@@ -254,7 +254,8 @@ const applyForExtension = async (row: any) => {
 //确认延期
 const confirmApplyForExtension = async() => {
     try{
-        const res = await extensionAPI({
+        undoneLoading.value = true;
+/*         const res = await extensionAPI({
             bookId:extensionBookId.value,
             data:dataValue.value,
         })
@@ -270,7 +271,8 @@ const confirmApplyForExtension = async() => {
           dialogFormVisible.value = false;
         } else {
             ElMessage.error(res.data.msg)
-        }
+        } */
+        undoneLoading.value = false;
     }catch(e){console.log('e',e);}
 }
 //任务回退
