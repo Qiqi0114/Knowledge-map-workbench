@@ -1,5 +1,5 @@
 <template>
-   <el-row>
+   <el-row style="height: 500px;">
     <el-col
       v-for="(o, index) in baseInfoCardData "
       :key="o"
