@@ -239,7 +239,7 @@ const drawBarChart = async(nodes: { id: string; name: string; }[],links: { sourc
                                     // 连接线
                                     .force("link",d3.forceLink().id(d => d.id))
                                     // 引力
-                                    .force("charge",d3.forceManyBody().strength(-200))
+                                    .force("charge",d3.forceManyBody().strength(-80))
                                     // 整个实例中心
                                     .force("center",d3.forceCenter(w/2,h/2))
                                     forceSimulation.alpha(1).restart()
@@ -579,10 +579,6 @@ const toggleMenu = (current: { append: (arg0: string) => { (): any; new(): any; 
           population: 30,
           value: '修改',
           type: 'showOn'
-        },{
-          population: 30,
-          value: '建立',
-          type: 'addOn'
         }]
         // 创建一个环生成器
         const arc = d3.arc()
