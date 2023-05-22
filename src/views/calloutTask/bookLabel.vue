@@ -95,7 +95,7 @@
     </template>
     </el-drawer>
           <!--添加词条标注对话框-->
-          <el-dialog title="添加词条标注" v-model="dialogAddFormVisible">
+          <el-dialog title="添加词条标注" v-model="dialogAddFormVisible" @close="addEntryCancel()">
                 <el-form :model="addForm">
                   <el-row>
                     <el-col :span="12">
@@ -145,7 +145,7 @@
             </el-dialog>
 
           <!--修改节点对话框-->
-          <el-dialog title="修改节点" v-model="dialogEditFormVisible">
+          <el-dialog title="修改节点" v-model="dialogEditFormVisible" @close="editNodeCancel()">
                 <el-form :model="editForm">
                   <el-row>
                     <el-col :span="12">
