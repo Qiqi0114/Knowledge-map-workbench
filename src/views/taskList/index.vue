@@ -208,8 +208,10 @@ const getUndoneTaskList = async () => {
     tableUndoneData.value = [];
     const res = await getNewTaskListAPI({type:'1'});
     if (res.data.code === 200) {
-      tableUndoneData.value = res.data.data;
-      //Total.value = res.data.data.total
+      tableUndoneData.value = res.data.data.records; 
+      Total.value = res.data.data.total;
+      PageSize.value = res.data.data.size;
+      CurrentPage.value = res.data.data.pages;
     } else {
     }
     undoneLoading.value = false;
@@ -224,8 +226,10 @@ const getdoneTaskList = async () => {
     tabledoneData.value = [];
     const res = await getNewTaskListAPI({type:'2'});
     if (res.data.code === 200) {
-      tabledoneData.value = res.data.data;
-     // pTotal.value = res.data.data.total
+      tabledoneData.value = res.data.data.records; 
+      pTotal.value = res.data.data.total;
+      pPageSize.value = res.data.data.size;
+      pCurrentPage.value = res.data.data.pages;
     } else {
     }
     doneLoading.value = false;
