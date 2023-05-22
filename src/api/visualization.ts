@@ -22,9 +22,51 @@ export function getPieChartAPI(){
     })
 }
 //新列表
-export function getNewTaskListAPI(){
+export function getNewTaskListAPI(
+    param:{
+        type:string
+    }){
     return request({
         url:'/map_tab/knowledgeMapTable/book/getNewTaskList',
         method:'get',
+        params:param
     })
 }
+//结束任务
+export function endTaskAPI(
+    param: {
+      //词条id
+      id:string,
+    }) {
+    return request({
+      url: '/map_tab/knowledgeMapTable/book/taskDown',
+      method: 'get',
+      params:param
+    })
+  }     
+//任务回退
+export function rollbackTaskAPI(
+    param: {
+      //词条id
+      id:string,
+    }) {
+    return request({
+      url: '/map_tab/knowledgeMapTable/book/taskDown',
+      method: 'get',
+      params:param
+    })
+  }
+  //任务延迟
+export function extensionAPI(
+    param: {
+      //词条id
+      id:string,
+      //时间
+      date:string
+    }) {
+    return request({
+      url: '/map_tab/knowledgeMapTable/book/taskOn',
+      method: 'get',
+      params:param
+    })
+  }
