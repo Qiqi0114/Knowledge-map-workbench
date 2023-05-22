@@ -68,6 +68,9 @@ const getTaskBookList = async() => {
             pageSize:pPageSize.value,
         })
         baseInfoCardData.value = res.data.data.records;   
+        pTotal.value = res.data.data.total;
+        pPageSize.value = res.data.data.size;
+        pCurrentPage.value = res.data.data.pages;
     }catch(e){console.log('e',e);}
 }
 onMounted(() => {
