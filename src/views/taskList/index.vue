@@ -9,7 +9,7 @@
       style="width: 100%"
       :height="200"
       v-loading="undoneLoading"
-    >
+    > 
       <el-table-column
         prop="id"
         label="id"
@@ -55,14 +55,14 @@
     <!--分页器 start-->
     <div class="pagination-bg">
       <el-pagination
-        v-model:currentPage="pCurrentPage"
-        v-model:page-size="pPageSize"
+        v-model:currentPage="CurrentPage"
+        v-model:page-size="PageSize"
         :page-sizes="[10, 20]"
-        :small="pSmall"
-        :disabled="pDisabled"
-        :background="pBackground"
+        :small="Small"
+        :disabled="Disabled"
+        :background="Background"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="pTotal"
+        :total="Total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
@@ -130,8 +130,8 @@
         :background="pBackground"
         layout="total, sizes, prev, pager, next, jumper"
         :total="pTotal"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        @size-change="phandleSizeChange"
+        @current-change="phandleCurrentChange"
       />
     </div>
     <!--分页器 end-->
@@ -162,10 +162,26 @@
 <script lang="ts" setup>
 import { ElMessage, ElMessageBox } from "element-plus";
 import { onMounted, ref } from "vue";
-import { getNewTaskListAPI } from "../../api/visualization";
+import { endTaskAPI, extensionAPI, getNewTaskListAPI, rollbackTaskAPI } from "../../api/visualization";
 const undoneLoading = ref<boolean>(false);
 const doneLoading = ref<boolean>(false);
-
+// 总数
+const Total = ref(0);
+// 第几页
+const CurrentPage = ref<number>(1);
+// 每页多少条
+const PageSize = ref<number>(10);
+const Small = ref(false);
+const Disabled = ref(false);
+const Background = ref(false);
+const phandleSizeChange = (val: number) => {
+  PageSize.value = val;
+  getUndoneTaskList();
+};
+const phandleCurrentChange = (val: number) => {
+  CurrentPage.value = val;
+  getUndoneTaskList();
+};
 // 总数
 const pTotal = ref(0);
 // 第几页
@@ -177,11 +193,11 @@ const pDisabled = ref(false);
 const pBackground = ref(false);
 const handleSizeChange = (val: number) => {
   pPageSize.value = val;
-  getUndoneTaskList();
+  getdoneTaskList();
 };
 const handleCurrentChange = (val: number) => {
   pCurrentPage.value = val;
-  getUndoneTaskList();
+  getdoneTaskList();
 };
 //表格数据
 const tableUndoneData = ref([]);
@@ -190,9 +206,10 @@ const getUndoneTaskList = async () => {
   try {
     undoneLoading.value = true;
     tableUndoneData.value = [];
-    const res = await getNewTaskListAPI();
+    const res = await getNewTaskListAPI({type:'1'});
     if (res.data.code === 200) {
       tableUndoneData.value = res.data.data;
+      //Total.value = res.data.data.total
     } else {
     }
     undoneLoading.value = false;
@@ -205,9 +222,10 @@ const getdoneTaskList = async () => {
   try {
     doneLoading.value = true;
     tabledoneData.value = [];
-    const res = await getNewTaskListAPI();
+    const res = await getNewTaskListAPI({type:'2'});
     if (res.data.code === 200) {
       tabledoneData.value = res.data.data;
+     // pTotal.value = res.data.data.total
     } else {
     }
     doneLoading.value = false;
@@ -223,7 +241,7 @@ const endTask = async (row: any) => {
     .then(async () => {
       //结束过渡效果
       undoneLoading.value = true;
-      /*       const res = await endTaskAPI({id:row.id});
+      const res = await endTaskAPI({id:row.id});
       if (res.data.code == 200) {
           ElMessage({
               message: "已结束",
@@ -233,7 +251,7 @@ const endTask = async (row: any) => {
           getUndoneTaskList();
       } else {
           ElMessage.error(res.data.msg)
-      } */
+      } 
       undoneLoading.value = false;
     })
     .catch(() => {
@@ -255,8 +273,8 @@ const applyForExtension = async (row: any) => {
 const confirmApplyForExtension = async() => {
     try{
         undoneLoading.value = true;
-/*         const res = await extensionAPI({
-            bookId:extensionBookId.value,
+        const res = await extensionAPI({
+            id:extensionBookId.value,
             data:dataValue.value,
         })
         if (res.data.code == 200) {
@@ -271,7 +289,7 @@ const confirmApplyForExtension = async() => {
           dialogFormVisible.value = false;
         } else {
             ElMessage.error(res.data.msg)
-        } */
+        } 
         undoneLoading.value = false;
     }catch(e){console.log('e',e);}
 }
@@ -285,7 +303,7 @@ const taskRollback = async (row: any) => {
     .then(async () => {
       //回退的过渡效果
       doneLoading.value = true;
-      /*       const res = await rollbackTaskAPI({id:row.id});
+    const res = await rollbackTaskAPI({id:row.id});
       if (res.data.code == 200) {
           ElMessage({
               message: "已回退",
@@ -295,7 +313,7 @@ const taskRollback = async (row: any) => {
           getdoneTaskList();
       } else {
           ElMessage.error(res.data.msg)
-      } */
+      } 
       doneLoading.value = false;
     })
     .catch(() => {
